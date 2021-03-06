@@ -2,13 +2,14 @@
 
 use std::fs;
 use std::io;
+use std::path::Path;
 
 /*
  * Creates a config file at the given directory.
  * Returns nothing.
  */
 pub fn create_config() {
-    fs::write("dplay.cfg", "test")
+    fs::write("dplayr.cfg", "test")
         .expect("Couldn't create file.");
 }
 
@@ -17,5 +18,9 @@ pub fn create_config() {
  * Returns `std::fs::File`.
  */
 pub fn get_config() -> io::Result<fs::File> {
-    fs::File::open("dplay.cfg")
+    fs::File::open("dplayr.cfg")
+}
+
+pub fn check_config() -> bool {
+    Path::new("dplayr.cfg").exists()
 }
