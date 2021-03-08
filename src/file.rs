@@ -1,7 +1,6 @@
 // File related stuff goes here
 
 use std::fs;
-use std::io;
 use std::path::Path;
 
 /*
@@ -17,8 +16,9 @@ pub fn create_config() {
  * Opens "dplay.cfg".
  * Returns `std::fs::File`.
  */
-pub fn get_config() -> io::Result<fs::File> {
+pub fn get_config() -> fs::File {
     fs::File::open("dplayr.cfg")
+        .expect("Couldn't open config file.")
 }
 
 pub fn check_config() -> bool {
