@@ -22,6 +22,7 @@ pub fn get_line_type(text: &String) -> i32 {
 /// Returns the variable name and value
 pub fn get_var(text: &String) -> (String, String) {
     let mut i = 0;
+    let length = text.chars().count();
 
     // Find where the '=' is
     for c in text.chars() {
@@ -35,8 +36,6 @@ pub fn get_var(text: &String) -> (String, String) {
     if i == 0 { panic!("Invalid variable."); }
 
     // Check if the variable has a value
-    let length = text.chars().count();
-    println!("{}", length);
     if length == i + 1 {
         return (String::from(&text[1..i]), String::from(""));
     }
