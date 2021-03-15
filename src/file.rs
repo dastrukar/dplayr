@@ -5,7 +5,21 @@ use std::path::Path;
 
 /// Creates a config file at the current directory.
 pub fn create_config() {
-    fs::write("dplayr.cfg", "test")
+    fs::write("dplayr.cfg",
+"# This is a comment
+$srcprt=/home/das/Games/gzdoom/gzdoom
+$preset=
+
+# These are \"items\"
+item1
+item2
+item3
+
+start;presetname
+    item4
+    item5
+    item6
+end;")
         .expect("Couldn't create file.");
 }
 
