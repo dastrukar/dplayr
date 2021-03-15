@@ -1,5 +1,9 @@
 /// A bunch of functions for parsing stuff here
 
+use regex::Regex;
+
+struct Parser;
+
 /// Returns a value based on the line type
 /// `#` : Returns 1
 /// `$` : Returns 2
@@ -19,25 +23,59 @@ pub fn get_line_type(text: &String) -> i32 {
     result
 }
 
-/// Returns the variable name and value
-pub fn get_var(text: &String) -> (String, String) {
-    let mut i = 0;
-    let length = text.chars().count();
+/// Removes all "comments" found in the given string and returns it
+pub fn remove_comments(text: &String) -> String {
+    let re = Regex::new(r"\#.+").expect("Regex error in \"remove_comments\"!");
+    let mut result = String::new();
+    let mut offset: usize = 0;
 
-    // Find where the '=' is
-    for c in text.chars() {
-        if c == '=' {
-            break;
+    // Get anything that isn't a "comment"
+    for m in re.find_iter(text) {
+        result.push_str(&text[offset..m.start()].to_string());
+
+        offset = m.end();
+    }
+
+    // Get strings that may have been missed
+    result.push_str(&text[offset..text.chars().count()]);
+
+    result
+}
+
+/// Returns the variable name
+pub fn get_var_name(text: &String) -> Vec<String> {
+    let mut names: Vec<String> = Vec::new();
+
+    let re = Regex::new(r"\B\$.\S+=").expect("Regex error in \"get_var_name\"!");
+
+    // Get "variable name"
+    for m in re.find_iter(text) {
+        let name = m.as_str();
+        let len  = name.chars().count();
+
+        names.push(String::from(name)[1..len-1].to_string());
+    }
+
+    names
+}
+
+/// Returns the variable value
+pub fn get_var_value(text: &String) -> Vec<String> {
+    let mut values: Vec<String> = Vec::new();
+
+    let re = Regex::new(r"=.?\S*").expect("Regex error in \"get_var_value\"!");
+
+    // Get "variable value"
+    for m in re.find_iter(text) {
+        let value = m.as_str();
+        let len   = value.chars().count();
+
+        if len <= 1 {
+            values.push("".to_string());
+        } else {
+            values.push(String::from(value)[1..len].to_string());
         }
-        i += 1;
     }
-
-    // If the variable doesn't have a name, panic.
-    if i == 0 { panic!("Invalid variable."); }
-
-    // Check if the variable has a value
-    if length == i + 1 {
-        return (String::from(&text[1..i]), String::from(""));
-    }
-    (String::from(&text[1..i]), String::from(&text[i+1..length]))
+    
+    values
 }
