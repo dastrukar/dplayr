@@ -5,8 +5,6 @@ use std::fs::File;
 use std::path::Path;
 use std::io::BufReader;
 
-use crate::parser;
-
 /// Creates a config file at the current directory.
 pub fn create_config() {
     fs::write("dplayr.cfg",
