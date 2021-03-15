@@ -34,7 +34,7 @@ pub fn remove_comments(text: &String) -> String {
 /// Returns the variable name
 pub fn get_var(text: &String) -> (Vec<String>, Vec<String>) {
     // Get the variables first
-    let re_vars = Regex::new(r"\B[\$[=]].\S+")
+    let re_vars = Regex::new(r"\B\$\S+=(\S+)?")
         .expect("Regex error!");
     let mut vars: Vec<String> = Vec::new();
 
@@ -48,18 +48,22 @@ pub fn get_var(text: &String) -> (Vec<String>, Vec<String>) {
     let mut names: Vec<String> = Vec::new();
     let mut values: Vec<String> = Vec::new();
 
-    let re_names = Regex::new(r"\B\$.\S+=")
+    let re_names = Regex::new(r"\B\$\S+=")
         .expect("Regex error!");
-    let re_values = Regex::new(r"=.?\S*")
+    let re_values = Regex::new(r"=(\S?)+")
         .expect("Regex error!");
 
     // Get "variable name"
     for name in &vars {
+        let result = re_names.find(&name)
+            .unwrap()
+            .as_str();
         names.push(
-            re_names.find(&name)
-                .unwrap()
-                .as_str()
-                .to_string()
+            result[
+                1..result
+                    .chars()
+                    .count() - 1
+            ].to_string()
         );
     }
 
