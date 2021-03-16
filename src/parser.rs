@@ -2,6 +2,35 @@
 
 use regex::Regex;
 
+
+pub struct Vars<'v> {
+    names:   Vec<&'v str>,
+    values: Vec<&'v str>,
+}
+
+impl<'v> Vars<'v> {
+    fn new() -> Self {
+        Vars { names: Vec::new(), values: Vec::new() }
+    }
+
+    fn get_value_of(&self, name: &str) -> Result<&str, ()> {
+        let mut vector_index: usize = 0;
+        let mut is_exist = false;
+
+        // Find the variable's Vec index
+        for variable in &self.names {
+            if variable == &name { is_exist = true; break; }
+            vector_index += 1;
+        }
+
+        // If variable doesn't exist, return an empty string
+        if !is_exist { return Err(()); }
+
+        Ok(self.values[vector_index])
+    }
+}
+
+
 //=========================================================
 // Fetch functions
 //----------------
@@ -17,22 +46,6 @@ pub fn fetch_var_dec(text: &String) -> Vec<&str> {
     vars
 }
 
-/// Returns variable values from the given `var` vec
-pub fn fetch_var_from_vec<'a> (name: &str, var: &'a (Vec<&str>, Vec<&str>)) -> Result<&'a str, ()> {
-    let mut vector_index: usize = 0;
-    let mut is_exist = false;
-
-    // Find the variable's Vec index
-    for variable in &var.0 {
-        if variable == &name { is_exist = true; break; }
-        vector_index += 1;
-    }
-
-    // If variable doesn't exist, return an empty string
-    if !is_exist { return Err(()); }
-
-    Ok(&var.1[vector_index])
-}
 
 pub fn fetch_preset_start_end(name: &str, text: &String) -> Vec<usize> {
     let re_presetstart = Regex::new(r"start;\S+")
@@ -105,12 +118,11 @@ pub fn remove_comments(text: &String) -> String {
 //---------------
 
 /// Returns variable names and values
-pub fn get_var(text: &String) -> (Vec<&str>, Vec<&str>) {
+pub fn get_var(text: &String) -> Vars {
     // Get the variables first
-    let vars = fetch_var_dec(&text);
+    let variables = fetch_var_dec(&text);
 
-    let mut names: Vec<&str> = Vec::new();
-    let mut values: Vec<&str> = Vec::new();
+    let mut vars = Vars::new();
 
     let re_names = Regex::new(r"\B\$\S+=")
         .expect("Regex error!");
@@ -118,12 +130,12 @@ pub fn get_var(text: &String) -> (Vec<&str>, Vec<&str>) {
         .expect("Regex error!");
 
     // Get "variable name"
-    for name in &vars {
+    for name in &variables {
         let result = re_names.find(&name)
             .unwrap()
             .as_str();
 
-        names.push(
+        vars.names.push(
             &result[
                 1..result
                     .chars()
@@ -133,12 +145,12 @@ pub fn get_var(text: &String) -> (Vec<&str>, Vec<&str>) {
     }
 
     // Get "variable value"
-    for value in &vars {
+    for value in &variables {
         let result = re_values.find(&value)
             .unwrap()
             .as_str();
 
-        values.push(
+        vars.values.push(
             &result[
                 1..result
                     .chars()
@@ -147,12 +159,12 @@ pub fn get_var(text: &String) -> (Vec<&str>, Vec<&str>) {
         );
     }
 
-    (names, values)
+    vars
 }
 
 /// Returns the parameters from a preset
-pub fn get_preset(text: &String, var: &(Vec<&str>, Vec<&str>)) -> Result<String, ()> {
-    let preset_var = fetch_var_from_vec("preset", &var);
+pub fn get_preset(text: &String, var: &Vars) -> Result<String, ()> {
+    let preset_var = var.get_value_of("preset");
     let preset_var = match preset_var {
         Ok(str) => str,
         Err(()) => return Err(()),
