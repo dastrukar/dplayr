@@ -13,12 +13,14 @@ impl Config {
 # $name=value
 #
 # ^ Note how there are no spaces.
-# 
+#
 # Variables can then be called with the following syntax:
 # $name
-# 
+#
 # Variables can also be used for declaring other variables:
 # $name=$variable
+#
+# You can only declare a variable with a specific name once.
 #
 # There are 2 special variables:
 # $srcprt, and $preset
