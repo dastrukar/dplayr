@@ -1,6 +1,6 @@
 /// A bunch of functions for parsing stuff here
 
-use regex::Regex;
+use regex::{Regex, Match};
 
 const REGEX_PRESETSTART:  &str = r"start;(\S+)?";
 const REGEX_PRESETEND:    &str = r"end;"; 
@@ -8,6 +8,7 @@ const REGEX_VARS:         &str = r"\B\$\S+=(\S+)?";
 const REGEX_NAMES:        &str = r"\B\$\S+=";
 const REGEX_VALUES:       &str = r"=(\S?)+";
 const REGEX_PRESET_SPLIT: &str = r"[^,]+";
+const REGEX_CONTAINER:    &str = r"\[\$\S+\]";
 
 
 pub struct Vars<'v> {
@@ -36,6 +37,8 @@ impl<'v> Vars<'v> {
         Ok(self.values[vector_index])
     }
 }
+
+
 
 
 //=========================================================
@@ -87,7 +90,31 @@ pub fn get_var_declares(cfg: &String) -> Vec<&str> {
 }
 
 
+/// Returns true if the following pattern is found:
+/// [$name]
+pub fn get_container(text: &str) -> Option<Match> {
+    let re_container = Regex::new(REGEX_CONTAINER).unwrap();
+
+    re_container.find(text)
+}
+
+
+/// Used to process variables contained in []
+/// Returns the variable's value
+pub fn get_contained_var(text: &str, m: &Match, vars: &Vars)
+    -> String {
+    let var_pos   = m.start();
+    let var_len   = m.as_str().chars().count();
+    let var_name  = &m.as_str()[2..var_len-1];
+    let var_value = vars.get_value_of(var_name)
+        .expect(&format!("\n\nUnknown variable {:?}\n\n", var_name));
+
+    text[0..var_pos].to_string() + &var_value
+}
+
+
 /// Returns all preset names
+
 
 
 /// Returns `Vec<usize>` of the positions for the given preset `name`
@@ -129,21 +156,30 @@ pub fn get_preset_start_end(name: &str, cfg: &String)
 
 
 /// Returns parameters from the given preset `name`
-pub fn get_preset_params<'a> (name: &'a str, cfg: &'a String)
-    -> Vec<&'a str> {
+pub fn get_preset_params<'a> (name: &'a str, cfg: &'a String, vars: &'a Vars)
+    -> Vec<String> {
     let range = get_preset_start_end(&name, &cfg)
         .expect(&format!("\n\n[!!Error while finding presets!!]\nUnable to find preset with the name {:?}.\n\n", name));
 
-    let re_start = Regex::new(REGEX_PRESETSTART).unwrap();
-    let mut result: Vec<&str> = Vec::new();
+    let re_start     = Regex::new(REGEX_PRESETSTART).unwrap();
+    let mut result: Vec<String> = Vec::new();
 
     let cfg_slice = &cfg[range[0]..range[1]];
     for item in cfg_slice.split_whitespace() {
-        if !re_start.find(&item).is_none() { 
+        if re_start.find(&item).is_some() { 
             let name = String::from(name);
             panic!(format!("\n\nUnexpected \"start;\" found inside preset {:?}\n\n", name));
         }
-        result.push(item);
+
+        // Convert variables
+        let variable = get_container(item);
+        if variable.is_some() {
+            result.push(
+                get_contained_var(item, &variable.unwrap(), vars)
+            );
+        } else {
+            result.push(item.to_string());
+        }
     }
 
     result
@@ -197,7 +233,7 @@ pub fn get_vars(cfg: &String) -> Vars {
 
 
 /// Returns the parameters from a preset
-pub fn get_preset<'v> (cfg: &'v String, vars: &'v Vars) -> Result<Vec<&'v str>, ()> {
+pub fn get_preset<'v> (cfg: &'v String, vars: &'v Vars) -> Result<Vec<String>, ()> {
     let preset_var = vars.get_value_of("preset")?;
 
     let mut presets: Vec<&str> = Vec::new();
@@ -212,9 +248,9 @@ pub fn get_preset<'v> (cfg: &'v String, vars: &'v Vars) -> Result<Vec<&'v str>, 
     }
 
     // Get the preset parameters
-    let mut result: Vec<&str> = Vec::new();
+    let mut result: Vec<String> = Vec::new();
     for preset in &presets {
-        result.append(&mut get_preset_params(preset, cfg));
+        result.append(&mut get_preset_params(preset, cfg, vars));
     }
 
     println!("$preset={:?}", presets);
