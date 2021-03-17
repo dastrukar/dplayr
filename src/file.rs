@@ -9,7 +9,7 @@ use crate::config::Config;
 
 /// Creates a config file at the current directory.
 pub fn create_config() {
-    fs::write("dplayr.cfg", Config::new().text)
+    fs::write("dplayr.cfg", Config::new())
         .expect("Failed to create config file.");
 }
 
