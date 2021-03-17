@@ -1,12 +1,10 @@
 /// For my sanity
 
-pub struct Config<'s> {
-    pub text: &'s str,
+pub struct Config {
 }
 
-impl<'s> Config<'s> {
-    pub fn new() -> Self {
-        Config { text:
+impl Config {
+    pub fn new<'s> () -> &'s str {
 // Start of config file
 "# This is a comment
 
@@ -62,6 +60,5 @@ start;default
 end;
 "
 // End of config file
-        }
     }
 }
