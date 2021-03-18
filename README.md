@@ -14,7 +14,7 @@ Oh, and I guess I also hate trying compile a Python program. *heh*
 ## What's new?
 * Custom variables!
 * Presets!
-* Less restrictive syntax!
+* Better comments! (well kind of)
 
 ## Wiki
 You should probably read the wiki. Or you might get lost on how to do certain things.
