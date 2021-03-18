@@ -196,8 +196,9 @@ pub fn get_preset_range(name: &str, cfg: &String) -> Vec<usize> {
     }
 
     match range.len() {
-        0 => panic!(format!("\n\n[!!Error while finding presets!!]\nUnable to find preset with the name {:?}.\n\n", name)),
-        1 => panic!(format!("\n\n[!!Error while finding presets!!]\nUnable to find end; of {:?}.\n\n", name)),
+        0      => panic!(format!("\n\n[!!Error while finding presets!!]\nUnable to find preset with the name {:?}.\n\n", name)),
+        1      => panic!(format!("\n\n[!!Error while finding presets!!]\nUnable to find end; of {:?}.\n\n", name)),
+        3..=99 => panic!(format!("\n\n[!!Error while finding presets!!]\nUnexpected extra preset {:?}.\n\n", name)),
         _ => return range,
     }
 }
