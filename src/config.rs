@@ -8,58 +8,20 @@ impl Config {
 // Start of config file
 "# This is a comment
 
-# :Variables:
-# Variables are declared with the following syntax:
-# $name=value
-#
-# ^ Note how there are no spaces.
-#
-# Variables can then be called with the following syntax:
-# $name
-#
-# Variables can also be used for declaring other variables:
-# $name=$variable
-#
-# You can only declare a variable with a specific name once.
-#
-# There are 2 special variables:
-# $srcprt, and $preset
-#
-# The $srcprt variable is used to tell dPlayR where your preferred source port is located.
-# It has to be declared, or else dPlayR will throw an error.
-#
-# The $preset variable is used for stating what presets you want to use.
-# It's a special variable, and can take multiple values.
-# Each value is seperated by a comma[,].
-# Example:
-# $preset=preset1,preset2,preset3
-#
-# It should be noted that, variables declared in a preset, will still be declared.
-# Even if the preset isn't being used.
+# These are variables
+$srcprt= # <- Defines where your preferred source port is
+$preset= # <- Defines what preset you'll be using
+$skill=3 # <- This is a custom variable
 
-$srcprt=
-$preset=default
-$testvar1=value
-$testvar2=test
+# Any parameter that is outside of a preset will always be used
+# Example parameter, that is calling variable \"$skill\"
+-skill [$skill]
 
-
-# Note: Parameters outside of presets will always be used.
-# :Presets:
-# Example of a preset:
-# start;presetname
-#     parameter1
-#     parameter2
-# end;
-#
-# A preset can also be written in one line:
-# start;presetname parameter1 parameter2 end;
-#
-# It should be noted that presets can't contain other presets.
-# Doing so will cause an error.
-
+# This is the start of a preset, named \"default\"
 start;default
-    # Example preset
+    # Parameters that are put in here will only be used if this preset is being used
 end;
+# This is the end of a preset.
 "
 // End of config file
     }
