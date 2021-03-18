@@ -162,18 +162,19 @@ pub fn get_contained_var(text: &str, vars: &Vars)
         if m.start() == 0 { // []
             result.push_str(var_value);
         } else // [][]
-        if m.end() == text.chars().count() {
+        if m.start() == var_end {
             result.push_str(var_value);
         } else { // text[]
             result.push_str(&text[var_end..m.start()]);
             result.push_str(var_value);
         }
 
-        var_end = m.end() + 1;
+        var_end = m.end();
     }
 
     // Get the remaining bits of the string
     if var_end < text.chars().count() { 
+        println!("{}", &text[var_end..text.chars().count()]);
         result.push_str(&text[var_end..text.chars().count()]);
     }
 
