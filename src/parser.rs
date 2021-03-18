@@ -100,7 +100,6 @@ pub fn match_contained_var(text: &str) -> Vec<Match> {
 
     let mut result: Vec<Match> = Vec::new();
     for i in re_container.find_iter(text) {
-        println!("YO");
         result.push(i);
     }
 
@@ -325,7 +324,6 @@ pub fn get_parameters(cfg: &String, vars: &Vars) -> Vec<String> {
         }
 
         for text in slice.split_whitespace() {
-            println!("{}", text);
             parameters.push(get_contained_var(text, vars));
         }
     }
@@ -353,6 +351,5 @@ pub fn get_preset<'v> (cfg: &'v String, vars: &'v Vars) -> Result<Vec<String>, (
         result.append(&mut get_preset_params(preset, cfg, vars));
     }
 
-    println!("$preset={:?}", presets);
     Ok(result)
 }
