@@ -10,6 +10,7 @@ const REGEX_NAMES:          &str = r"\B\$\S+=";
 const REGEX_VALUES:         &str = r"=(\S+)?";
 const REGEX_PRESET_SPLIT:   &str = r"[^,]+";
 const REGEX_CONTAINER:      &str = r"\[\$(\S[^\]]+)?\]";
+const REGEX_PRESETSTARTEND: &str = r"\b((start;)|(end;))";
 
 
 pub struct Vars<'v> {
@@ -281,6 +282,8 @@ pub fn get_parameters(cfg: &String, vars: &Vars) -> Vec<String> {
     let preset_containers:
         Vec<(Vec<Match>, &str)> = match_preset_containers(cfg);
 
+    let re_presetstartend: Regex = Regex::new(REGEX_PRESETSTARTEND).unwrap();
+
     let mut is_slicing: bool = true;
 
     let mut index:   usize = 0;
@@ -326,6 +329,7 @@ pub fn get_parameters(cfg: &String, vars: &Vars) -> Vec<String> {
         }
 
         for text in slice.split_whitespace() {
+            if re_presetstartend.find(text).is_some() { panic!(format!("\n\nUnexpected {:?}\n\n", text)); }
             parameters.push(get_contained_var(text, vars));
         }
     }
