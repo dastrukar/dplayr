@@ -18,6 +18,6 @@ Oh, and I guess I also hate trying compile a Python program. *heh*
 
 ## Wiki
 You should probably read the wiki. Or you might get lost on how to do certain things.
-* [Example Config](/wiki/Example-Config-File)
-* [Variables](/wiki/Variables)
-* [Presets](/wiki/Presets)
+* [Example Config](https://github.com/dastrukar/dplayr/wiki/Example-Config-File)
+* [Variables](https://github.com/dastrukar/dplayr/wiki/Example-Config-File)
+* [Presets](https://github.com/dastrukar/dplayr/wiki/Example-Config-File)
