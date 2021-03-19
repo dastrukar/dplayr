@@ -1,4 +1,6 @@
 # dPlayR
+![Travis CI](https://travis-ci.com/dastrukar/dplayr.svg?branch=master)
+
 A minimalist Classic Doom(TM) launcher, and a *hopefully* better version of dPlay.
 Written in Rust.
 
