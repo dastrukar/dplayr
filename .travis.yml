@@ -1,16 +1,15 @@
 language: rust
 rust:
-    - stable
-
+- stable
 os:
-    - linux
-    - osx
-    - windows
-
+- linux
+- osx
+- windows
 deploy:
   provider: releases
-  api_key: "GITHUB OAUTH TOKEN"
-  file: "FILE TO UPLOAD"
+  file: dplayr-$os
   skip_cleanup: true
   on:
     tags: true
+  api_key:
+    secure: H08Kld9+/Opzoela46I66qUBZ33yzl3y3Bt03xbFwh0rySulTX7dyGqu2VpZoXVDlK/6OIrvQ3Z5VZ4eXoQwKW4LvAsnYbedloy6Ys4kAClnmNr8OGiLH/P9cvLuwGtiqgbjTrxukvdRCaThQi2mCegeWxAZshSZOLvxA6iI7U0aqYNxpxeGJG2i3KhEsEjuzJfh7Uc9K1Q33/Mqsa0hy5jNAqpRoeUSq6fd99JryWAlEYeB0mjYxUsvhU6vDJirrxzepEIqW+HDpaI0iEsAXSRsEmgOUK4LAIgj8EIfPipDpnKuTQJrdVBFMN8r45xWVukpiWtKlREsw2ffczieg20ekwIoi/rpSbKMn8jSK8YN8OXFcvM8droz/7q2L38tpQQJ+CnqTjkRYmPSQkMs0FaqPRAlj/v2GnhWWCAn1kqRl7NNQq7ZC34FUwDAMk8yCFdIoOzO0zhhQwVo7WpeZp9c77lcMxtl3yAsfxgmExIofmXVbgftNg9MoorD9mp+Pq2A4A5Wmu5lRCVAkQoLeLnGUpwGPGyeAJyqW8dTj2333ra8wwNEQr3djWBvUTOfemPmh5h15tMzSrmelL3iCfsPR2hJdHHWDS510+PH4TbeD/FGTiWU3BcFX5WN5/NlZ8CjtLqiFTltNuD1rM4EAKiZqaDy2CW/YtiMSAsfRxo=
