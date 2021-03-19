@@ -2,6 +2,7 @@
 
 use regex::{Regex, Match};
 
+// Note to self: r = RAW_STRING_LITERAL
 const REGEX_COMMENTS:       &str = r"\#(.+)?";
 const REGEX_PRESETSTART:    &str = r"start;(\S+)?";
 const REGEX_PRESETEND:      &str = r"end;"; 
@@ -10,6 +11,8 @@ const REGEX_NAMES:          &str = r"\B\$\S+=";
 const REGEX_VALUES:         &str = r"=(\S+)?";
 const REGEX_PRESET_SPLIT:   &str = r"[^,]+";
 const REGEX_CONTAINER:      &str = r"\[\$(\S[^\]]+)?\]";
+const REGEX_QUOTES:         &str = r#"\B"(.+)?"\B"#;
+const REGEX_QUOTE:          &str = r#"""#;
 const REGEX_PRESETSTARTEND: &str = r"\b((start;)|(end;))";
 
 
@@ -108,6 +111,16 @@ pub fn match_contained_var(text: &str) -> Vec<Match> {
 }
 
 
+/// Returns Matches of any quotation marks found
+/// Will panic if the amount found is an odd number
+pub fn match_quote(text: &str) -> Vec<Match> {
+    Regex::new(REGEX_QUOTE)
+        .unwrap()
+        .find_iter(text)
+        .collect()
+}
+
+
 /// Returns preset container matches in the following format:
 /// `Vec< container_match: Vec<Match>, name: &str >`
 pub fn match_preset_containers(text: &str) -> Vec<(Vec<Match>, &str)> {
@@ -146,6 +159,26 @@ pub fn match_preset_containers(text: &str) -> Vec<(Vec<Match>, &str)> {
 //=========================================================
 // Get functions
 //---------------
+
+/// Returns quotes from the given text
+pub fn get_quotes(text: &str) -> Vec<&str> {
+    let matches: Vec<Match> = match_quote(text);
+
+    if matches.len() % 2 != 0 { panic!("\n\nUnexpected additional \".\n\n"); }
+
+    let mut quotes: Vec<&str> = Vec::new();
+
+    let m_len: usize = matches.len() / 2;
+    for i in 0..m_len {
+        let index:  usize = i * 2;
+        let qstart: usize = matches[index].end();
+        let qend:   usize = matches[index+1].start();
+
+        quotes.push(&text[qstart..qend]);
+    }
+
+    quotes
+}
 
 /// Used to process variables contained in []
 /// Returns the variable's value
@@ -282,8 +315,11 @@ pub fn get_parameters(cfg: &String, vars: &Vars) -> Vec<String> {
     let preset_containers:
         Vec<(Vec<Match>, &str)> = match_preset_containers(cfg);
 
+    let re_quote:          Regex = Regex::new(REGEX_QUOTE).unwrap();
+    let re_quotes:         Regex = Regex::new(REGEX_QUOTES).unwrap();
     let re_presetstartend: Regex = Regex::new(REGEX_PRESETSTARTEND).unwrap();
 
+    println!("re_quotes: {:?}", re_quotes.as_str());
     let mut is_slicing: bool = true;
 
     let mut index:   usize = 0;
@@ -328,9 +364,33 @@ pub fn get_parameters(cfg: &String, vars: &Vars) -> Vec<String> {
             is_slicing = false;
         }
 
+        let quotes: Vec<&str> = get_quotes(&slice);
+
+        let mut is_quote:  bool  = false;
+        let mut q_index:   usize = 0;
         for text in slice.split_whitespace() {
+            let mut no_take: bool = false;
             if re_presetstartend.find(text).is_some() { panic!(format!("\n\nUnexpected {:?}\n\n", text)); }
-            parameters.push(get_contained_var(text, vars));
+
+            println!("{}", text);
+            // Find quotes
+            if re_quote.find(text).is_some() && !is_quote {
+                parameters.push(get_contained_var(quotes[q_index], vars));
+                q_index += 1;
+
+                println!("found quote{}", &text[text.len()-1..text.len()]);
+                // Check if there's another quote
+                if &text[text.len()-1..text.len()] != "\"" { println!("keep going"); is_quote = true; }
+                else { no_take = true; }
+            } else
+            if re_quote.find(text).is_some() {
+                println!("denied");
+                no_take = true;
+            }
+
+            // Don't pick up quotes
+            if no_take { is_quote = false; }
+            else if !is_quote { parameters.push(get_contained_var(text, vars)); }
         }
     }
 
