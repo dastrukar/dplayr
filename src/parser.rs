@@ -200,7 +200,6 @@ pub fn get_contained_var(text: &str, vars: &Vars)
 
     // Get the remaining bits of the string
     if var_end < text.chars().count() { 
-        println!("{}", &text[var_end..text.chars().count()]);
         result.push_str(&text[var_end..text.chars().count()]);
     }
 
@@ -229,19 +228,16 @@ pub fn get_args_from_text(text: &str, vars: &Vars, preset_name: Option<&str>) ->
             }
         }
 
-        println!("{}", text);
         // Find quotes
         if re_quote.find(t).is_some() && !is_quote {
             args.push(get_contained_var(quotes[q_index], vars));
             q_index += 1;
 
-            println!("found quote{}", &text[text.len()-1..text.len()]);
             // Check if there's another quote
-            if &text[text.len()-1..text.len()] != "\"" { println!("keep going"); is_quote = true; }
+            if &text[text.len()-1..text.len()] != "\"" { is_quote = true; }
             else { no_take = true; }
         } else
         if re_quote.find(t).is_some() {
-            println!("denied");
             no_take = true;
         }
 
