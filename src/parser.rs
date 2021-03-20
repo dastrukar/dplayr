@@ -180,6 +180,7 @@ pub fn get_quotes(text: &str) -> Vec<&str> {
     quotes
 }
 
+
 /// Used to process variables contained in []
 /// Returns the variable's value
 pub fn get_contained_var(text: &str, vars: &Vars)
@@ -216,6 +217,52 @@ pub fn get_contained_var(text: &str, vars: &Vars)
 }
 
 
+/// Returns any arguments found from the given text
+/// Each argument is seperated by a whitespace char, unless quoting is used
+/// If `preset_name` is provided, error messages will contain the preset name
+pub fn get_args_from_text(text: &str, vars: &Vars, preset_name: Option<&str>) -> Vec<String> {
+    let quotes: Vec<&str> = get_quotes(text);
+
+    let re_presetstartend: Regex = Regex::new(REGEX_PRESETSTARTEND).unwrap();
+    let re_quote:          Regex = Regex::new(REGEX_QUOTE).unwrap();
+
+    let mut args:      Vec<String> = Vec::new();
+    let mut is_quote:  bool        = false;
+    let mut q_index:   usize       = 0;
+    for t in text.split_whitespace() {
+        let mut no_take: bool = false;
+        if re_presetstartend.find(text).is_some() {
+            match preset_name.is_some() {
+                true  => panic!(format!("\n\nUnexpected {:?} in {:?}\n\n", t, preset_name.unwrap())),
+                false => panic!(format!("\n\nUnexpected {:?}\n\n", t)),
+            }
+        }
+
+        println!("{}", text);
+        // Find quotes
+        if re_quote.find(t).is_some() && !is_quote {
+            args.push(get_contained_var(quotes[q_index], vars));
+            q_index += 1;
+
+            println!("found quote{}", &text[text.len()-1..text.len()]);
+            // Check if there's another quote
+            if &text[text.len()-1..text.len()] != "\"" { println!("keep going"); is_quote = true; }
+            else { no_take = true; }
+        } else
+        if re_quote.find(t).is_some() {
+            println!("denied");
+            no_take = true;
+        }
+
+        // Don't pick up quotes
+        if no_take { is_quote = false; }
+        else if !is_quote { args.push(get_contained_var(t, vars)); }
+    }
+
+    args
+}
+
+
 /// Returns `Vec<usize>` of the positions for the given preset `name`
 pub fn get_preset_range(name: &str, cfg: &String) -> Vec<usize> {
     let mut range: Vec<usize> = Vec::new();
@@ -239,23 +286,14 @@ pub fn get_preset_range(name: &str, cfg: &String) -> Vec<usize> {
 
 
 /// Returns parameters from the given preset `name`
-pub fn get_preset_params<'a> (name: &'a str, cfg: &'a String, vars: &'a Vars)
+pub fn get_preset_args(name: &str, cfg: &String, vars: &Vars)
     -> Vec<String> {
     let range: Vec<usize> = get_preset_range(&name, &cfg);
 
-    let re_start: Regex = Regex::new(REGEX_PRESETSTART).unwrap();
     let mut result: Vec<String> = Vec::new();
 
     let cfg_slice: &str = &cfg[range[0]..range[1]];
-    for item in cfg_slice.split_whitespace() {
-        if re_start.find(&item).is_some() { 
-            let name: String = String::from(name);
-            panic!(format!("\n\nUnexpected \"start;\" found inside preset {:?}\n\n", name));
-        }
-
-        // Check variables
-        result.push(get_contained_var(item, vars));
-    }
+    result.append(&mut get_args_from_text(cfg_slice, vars, Some(name)));
 
     result
 }
@@ -315,11 +353,6 @@ pub fn get_parameters(cfg: &String, vars: &Vars) -> Vec<String> {
     let preset_containers:
         Vec<(Vec<Match>, &str)> = match_preset_containers(cfg);
 
-    let re_quote:          Regex = Regex::new(REGEX_QUOTE).unwrap();
-    let re_quotes:         Regex = Regex::new(REGEX_QUOTES).unwrap();
-    let re_presetstartend: Regex = Regex::new(REGEX_PRESETSTARTEND).unwrap();
-
-    println!("re_quotes: {:?}", re_quotes.as_str());
     let mut is_slicing: bool = true;
 
     let mut index:   usize = 0;
@@ -350,7 +383,7 @@ pub fn get_parameters(cfg: &String, vars: &Vars) -> Vec<String> {
             index = var_decs[v_index].end();
 
             v_index += 1;
-        } else 
+        } else
         if (set_pos < var_pos || v_index == var_len) && p_index != set_len {
             // Preset
             slice = cfg[index..set_pos].to_string();
@@ -364,34 +397,8 @@ pub fn get_parameters(cfg: &String, vars: &Vars) -> Vec<String> {
             is_slicing = false;
         }
 
-        let quotes: Vec<&str> = get_quotes(&slice);
+        parameters.append(&mut get_args_from_text(&slice, vars, None));
 
-        let mut is_quote:  bool  = false;
-        let mut q_index:   usize = 0;
-        for text in slice.split_whitespace() {
-            let mut no_take: bool = false;
-            if re_presetstartend.find(text).is_some() { panic!(format!("\n\nUnexpected {:?}\n\n", text)); }
-
-            println!("{}", text);
-            // Find quotes
-            if re_quote.find(text).is_some() && !is_quote {
-                parameters.push(get_contained_var(quotes[q_index], vars));
-                q_index += 1;
-
-                println!("found quote{}", &text[text.len()-1..text.len()]);
-                // Check if there's another quote
-                if &text[text.len()-1..text.len()] != "\"" { println!("keep going"); is_quote = true; }
-                else { no_take = true; }
-            } else
-            if re_quote.find(text).is_some() {
-                println!("denied");
-                no_take = true;
-            }
-
-            // Don't pick up quotes
-            if no_take { is_quote = false; }
-            else if !is_quote { parameters.push(get_contained_var(text, vars)); }
-        }
     }
 
     parameters
@@ -414,7 +421,7 @@ pub fn get_preset<'v> (cfg: &'v String, vars: &'v Vars) -> Result<Vec<String>, (
     // Get the preset parameters
     let mut result: Vec<String> = Vec::new();
     for preset in &presets {
-        result.append(&mut get_preset_params(preset, cfg, vars));
+        result.append(&mut get_preset_args(preset, cfg, vars));
     }
 
     Ok(result)
