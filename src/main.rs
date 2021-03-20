@@ -24,8 +24,8 @@ fn main() -> Result<()> {
 
     println!("Variables:\n{:?}\n\nValues:\n{:?}", vars.names, vars.values);
 
-    let parameters: Vec<String> = parser::get_parameters(&config, &vars);
-    println!("{:?}", parameters);
+    let arguments: Vec<String> = parser::get_arguments(&config, &vars);
+    println!("{:?}", arguments);
 
     let presets = parser::get_preset(&config, &vars);
     let presets: Vec<String> = match presets {
@@ -41,7 +41,7 @@ fn main() -> Result<()> {
         .expect("\n\nCouldn't find variable \"srcprt\".\n\n");
 
     Command::new(&run)
-        .args(&parameters)
+        .args(&arguments)
         .args(&presets)
         .status()
         .expect(&format!("\n\nFailed to execute process.\nPerhaps the directory given was incorrect?\n\nCommand:{:?}{:?}\n\n", run, presets));

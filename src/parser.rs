@@ -348,7 +348,7 @@ pub fn get_vars(cfg: &String) -> Vars {
 
 /// Returns any parameters that is outside of a preset
 /// (no variable declarations)
-pub fn get_parameters(cfg: &String, vars: &Vars) -> Vec<String> {
+pub fn get_arguments(cfg: &String, vars: &Vars) -> Vec<String> {
     let var_decs: Vec<Match> = match_var_declares(cfg);
     let preset_containers:
         Vec<(Vec<Match>, &str)> = match_preset_containers(cfg);
@@ -362,7 +362,7 @@ pub fn get_parameters(cfg: &String, vars: &Vars) -> Vec<String> {
     let cfg_len = cfg.chars().count();
 
     // Get parameters
-    let mut parameters: Vec<String> = Vec::new();
+    let mut arguments: Vec<String> = Vec::new();
 
     let var_len: usize = var_decs.len();
     let set_len: usize = preset_containers.len();
@@ -397,11 +397,10 @@ pub fn get_parameters(cfg: &String, vars: &Vars) -> Vec<String> {
             is_slicing = false;
         }
 
-        parameters.append(&mut get_args_from_text(&slice, vars, None));
-
+        arguments.append(&mut get_args_from_text(&slice, vars, None));
     }
 
-    parameters
+    arguments
 }
 
 
