@@ -22,8 +22,8 @@ fn main() -> Result<()> {
 
     for arg in args {
         if arg == "--help"    || arg == "-h" { println!("{}", help.get_help()); return Ok(()); }
-        if arg == "--verbose" || arg == "-v" { verbose = true; }
-        if arg == "--silent"  || arg == "-s" { silent = true; }
+        if arg == "--verbose" || arg == "-v" { verbose = true; println!("Enabling verbose mode."); }
+        if arg == "--silent"  || arg == "-s" { silent = true; println!("Enabling silent mode."); }
     }
 
     if verbose && silent { panic!("\n\nCan't have both silent and verbose mode enabled.\nPlease enable only one.\n\n"); }
