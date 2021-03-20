@@ -11,7 +11,6 @@ const REGEX_NAMES:          &str = r"\B\$\S+=";
 const REGEX_VALUES:         &str = r"=(\S+)?";
 const REGEX_PRESET_SPLIT:   &str = r"[^,]+";
 const REGEX_CONTAINER:      &str = r"\[\$(\S[^\]]+)?\]";
-const REGEX_QUOTES:         &str = r#"\B"(.+)?"\B"#;
 const REGEX_QUOTE:          &str = r#"""#;
 const REGEX_PRESETSTARTEND: &str = r"\b((start;)|(end;))";
 
@@ -86,28 +85,20 @@ pub fn remove_comments(cfg: &String) -> String {
 
 /// Returns for variable declarations from the given `cfg`
 pub fn match_var_declares(cfg: &String) -> Vec<Match> {
-    let re_vars:     Regex      = Regex::new(REGEX_VARS).unwrap();
-    let mut matches: Vec<Match> = Vec::new();
-
-    for m in re_vars.find_iter(cfg) {
-            matches.push(m);
-    }
-
-    matches
+    Regex::new(REGEX_VARS)
+        .unwrap()
+        .find_iter(cfg)
+        .collect()
 }
 
 
 /// Returns Matches if the following pattern is found:
 /// [$name]
 pub fn match_contained_var(text: &str) -> Vec<Match> {
-    let re_container: Regex = Regex::new(REGEX_CONTAINER).unwrap();
-
-    let mut result: Vec<Match> = Vec::new();
-    for i in re_container.find_iter(text) {
-        result.push(i);
-    }
-
-    result
+    Regex::new(REGEX_CONTAINER)
+        .unwrap()
+        .find_iter(text)
+        .collect()
 }
 
 
